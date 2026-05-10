@@ -96,7 +96,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }) {
           <button onClick={onClose} style={{ flex: 1, padding: '10px 16px', border: '1px solid var(--line)', borderRadius: 8, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>
             Cancel
           </button>
-          <button onClick={handleSave} style={{ flex: 1, padding: '10px 16px', border: 'none', borderRadius: 8, background: '#1D9E75', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>
+          <button onClick={handleSave} style={{ flex: 1, padding: '10px 16px', border: 'none', borderRadius: 8, background: 'var(--orange)', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>
             Save
           </button>
         </div>

@@ -1,13 +1,43 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
-// Add comment logic
+const DB_PATH = path.join(process.cwd(), 'data', 'reels-db.json');
+
+function loadDB() {
+  try {
+    if (fs.existsSync(DB_PATH)) {
+      const raw = fs.readFileSync(DB_PATH, 'utf8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('Failed to load reels DB', err);
+  }
+  return [];
+}
+
+function saveToDB(arr) {
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(arr, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to write reels DB', err);
+  }
+}
+
 export async function GET(request, { params }) {
   try {
     const { reelId } = params;
+    const reels = loadDB();
+    const reel = reels.find(r => r.id === reelId);
 
-    // Placeholder: fetch comments from database
-    const comments = [];
+    if (!reel) {
+      return NextResponse.json(
+        { success: false, error: 'Reel not found' },
+        { status: 404 }
+      );
+    }
 
+    const comments = reel.comments || [];
     return NextResponse.json({
       success: true,
       data: comments,
@@ -33,16 +63,37 @@ export async function POST(request, { params }) {
       );
     }
 
-    // Placeholder: save comment to database
+    const reels = loadDB();
+    const reelIndex = reels.findIndex(r => r.id === reelId);
+
+    if (reelIndex === -1) {
+      return NextResponse.json(
+        { success: false, error: 'Reel not found' },
+        { status: 404 }
+      );
+    }
+
+    const reel = reels[reelIndex];
+
+    // Initialize comments array if it doesn't exist
+    if (!reel.comments) {
+      reel.comments = [];
+    }
+
     const newComment = {
-      id: Date.now(),
+      id: `comment_${Date.now()}`,
       reelId,
       text,
       authorId: authorId || 'anon',
       authorName: authorName || 'Anonymous',
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       likes: 0,
     };
+
+    reel.comments.unshift(newComment);
+    
+    reels[reelIndex] = reel;
+    saveToDB(reels);
 
     return NextResponse.json({
       success: true,

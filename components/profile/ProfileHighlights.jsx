@@ -14,7 +14,7 @@ export default function ProfileHighlights({ highlights = [], isOwnProfile = fals
   };
 
   return (
-    <div style={{ maxWidth: 935, margin: '0 auto', padding: '16px 16px', background: '#fff', position: 'relative' }}>
+    <div style={{ maxWidth: 935, margin: '0 auto', padding: '16px 16px', background: 'var(--cream)', position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, overflowX: 'auto', scrollBehavior: 'smooth' }} ref={scrollRef}>
         {isOwnProfile && (
           <div style={{ flexShrink: 0, textAlign: 'center' }}>
@@ -23,16 +23,17 @@ export default function ProfileHighlights({ highlights = [], isOwnProfile = fals
                 width: 56,
                 height: 56,
                 borderRadius: '50%',
-                border: '2px dashed var(--line)',
+                border: '2px dashed var(--orange)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
+                background: '#fff',
               }}
             >
-              <Plus size={24} color="#111" strokeWidth={1.5} />
+              <Plus size={24} color="var(--orange)" strokeWidth={1.5} />
             </div>
-            <div style={{ fontSize: 12, marginTop: 8, color: '#111' }}>New</div>
+            <div style={{ fontSize: 12, marginTop: 8, color: 'var(--ink)' }}>New</div>
           </div>
         )}
 
@@ -48,7 +49,7 @@ export default function ProfileHighlights({ highlights = [], isOwnProfile = fals
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '2px solid var(--line)',
+                border: '2px solid rgba(200,90,26,0.22)',
               }}
             >
               {highlight.coverUrl ? (
@@ -57,7 +58,7 @@ export default function ProfileHighlights({ highlights = [], isOwnProfile = fals
                 <div style={{ fontSize: 24 }}>📷</div>
               )}
             </div>
-            <div style={{ fontSize: 12, marginTop: 8, color: '#111' }}>{highlight.title}</div>
+            <div style={{ fontSize: 12, marginTop: 8, color: 'var(--ink)' }}>{highlight.title}</div>
           </div>
         ))}
       </div>

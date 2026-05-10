@@ -12,12 +12,12 @@ import FollowersModal from '@/components/profile/FollowersModal';
 import { useProfile } from '@/hooks/useProfile';
 import { useProfilePosts } from '@/hooks/useProfilePosts';
 import { useFollowToggle } from '@/hooks/useFollowToggle';
-import { mockOwnProfile } from '@/data/mockProfile';
-import { mockPosts, mockSavedPosts } from '@/data/mockPosts';
+
+const SUPPORTED_HANDLE = 'kairolife';
 
 export default function ProfilePage({ params }) {
-  const handle = params.handle === 'me' ? mockOwnProfile.handle : params.handle;
-  const isOwnProfile = params.handle === 'me' || handle === mockOwnProfile.handle;
+  const handle = params.handle === 'me' ? SUPPORTED_HANDLE : params.handle;
+  const isOwnProfile = handle === SUPPORTED_HANDLE;
 
   // State
   const [activeTab, setActiveTab] = useState('posts');
@@ -29,17 +29,26 @@ export default function ProfilePage({ params }) {
 
   // Hooks
   const { profile, loading, error } = useProfile(handle);
-  const { posts, loading: postsLoading } = useProfilePosts(handle, activeTab);
+  const { posts } = useProfilePosts(handle, activeTab);
   const { isFollowing, toggleFollow } = useFollowToggle(handle);
 
-  const displayProfile = profile || (isOwnProfile ? mockOwnProfile : null);
+  const displayProfile = profile;
+  const handlePostClick = (post) => {
+    const postIndex = posts.findIndex((item) => item.id === post.id);
+    setSelectedPostIndex(postIndex >= 0 ? postIndex : 0);
+    setIsPostModalOpen(true);
+  };
 
-  if (loading || !displayProfile) {
-    return <div style={{ textAlign: 'center', padding: '40px 20px' }}>Loading profile...</div>;
+  if (handle !== SUPPORTED_HANDLE) {
+    return <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>Profile not found</div>;
+  }
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--muted)' }}>Loading profile...</div>;
   }
 
   if (error) {
-    return <div style={{ textAlign: 'center', padding: '40px 20px', color: 'red' }}>Profile not found</div>;
+    return <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--orange)' }}>Profile not found</div>;
   }
 
   const isCreator = displayProfile.profileType === 'creator' || displayProfile.profileType === 'agency';
@@ -48,28 +57,27 @@ export default function ProfilePage({ params }) {
   const getTabContent = () => {
     switch (activeTab) {
       case 'posts':
-        return <ProfileGrid posts={posts} onPostClick={(idx) => { setSelectedPostIndex(idx); setIsPostModalOpen(true); }} />;
+        return <ProfileGrid posts={posts} onPostClick={handlePostClick} />;
       case 'reels':
-        return isCreator ? <ProfileGrid posts={posts} onPostClick={(idx) => { setSelectedPostIndex(idx); setIsPostModalOpen(true); }} /> : <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>No reels yet</div>;
+        return isCreator ? <ProfileGrid posts={posts} onPostClick={handlePostClick} /> : <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>No reels yet</div>;
       case 'trips':
-        return isCreator ? <ProfileTripList /> : <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Not a creator</div>;
-      case 'saved':
-        return isOwnProfile ? <ProfileGrid posts={mockSavedPosts} onPostClick={(idx) => { setSelectedPostIndex(idx); setIsPostModalOpen(true); }} /> : null;
+        return isCreator ? <ProfileTripList trips={displayProfile.trips || []} isCreator /> : <div style={{ textAlign: 'center', padding: '40px', color: 'var(--muted)' }}>Not a creator</div>;
       case 'tagged':
-        return <ProfileGrid posts={posts} onPostClick={(idx) => { setSelectedPostIndex(idx); setIsPostModalOpen(true); }} />;
+        return <ProfileGrid posts={posts} onPostClick={handlePostClick} />;
       default:
         return null;
     }
   };
 
   return (
-    <div style={{ background: 'var(--color-background-primary)', minHeight: '100vh' }}>
+    <div style={{ background: 'linear-gradient(180deg, var(--warm) 0%, var(--cream) 24%, var(--cream) 100%)', minHeight: '100vh' }}>
       {/* Main Container */}
       <div style={{ maxWidth: 935, margin: '0 auto', padding: '0 20px' }}>
         {/* Profile Header */}
         <div style={{ paddingTop: 40, paddingBottom: 40 }}>
           <ProfileHeader
             profile={displayProfile}
+            postCount={posts.length}
             isOwnProfile={isOwnProfile}
             isFollowing={isFollowing}
             onFollow={toggleFollow}
@@ -85,11 +93,11 @@ export default function ProfilePage({ params }) {
         </div>
 
         {/* Creator Badge Strip */}
-        {isCreator && <CreatorBadgeStrip stats={displayProfile.creatorStats} />}
+        {isCreator && <CreatorBadgeStrip profile={displayProfile} />}
 
         {/* Tab Bar */}
         <div style={{ paddingTop: 20, paddingBottom: 20 }}>
-          <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} isCreator={isCreator} isOwnProfile={isOwnProfile} />
+          <ProfileTabBar activeTab={activeTab} onTabChange={setActiveTab} profileType={displayProfile.profileType} isCreator={isCreator} isOwnProfile={isOwnProfile} />
         </div>
 
         {/* Tab Content */}

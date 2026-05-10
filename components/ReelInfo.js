@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { MapPin, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ReelInfo({ reel, onFollow, onOpenTrip }) {
   const [expanded, setExpanded] = useState(false);
@@ -37,9 +38,13 @@ export default function ReelInfo({ reel, onFollow, onOpenTrip }) {
   return (
     <div style={{ height: '100vh', overflowY: 'auto', padding: 24, background: '#fff', color: '#111' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 20, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{reel.creator.avatarUrl || '👤'}</div>
+        <Link href={`/profile/${reel.creator.handle}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 20, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>{reel.creator.avatarUrl || '👤'}</div>
+        </Link>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>{reel.creator.name} {reel.creator.isVerified && <CheckCircle2 size={16} color="#1D9E75" fill="#1D9E75" strokeWidth={2} />}</div>
+          <Link href={`/profile/${reel.creator.handle}`} style={{ textDecoration: 'none', color: '#111' }}>
+            <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>{reel.creator.name} {reel.creator.isVerified && <CheckCircle2 size={16} color="#1D9E75" fill="#1D9E75" strokeWidth={2} />}</div>
+          </Link>
           <div style={{ fontSize: 12, color: 'var(--muted)' }}>@{reel.creator.handle}</div>
         </div>
         <button onClick={toggleFollow} style={{ borderRadius: 10, padding: '8px 12px', border: `1px solid ${following ? '#1D9E75' : 'var(--line)'}`, background: following ? '#1D9E75' : 'transparent', color: following ? '#fff' : '#111', fontWeight: 700 }}>{following ? 'Following' : 'Follow'}</button>

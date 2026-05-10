@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getSessionUserFromRequest } from '@/backend/auth/session-user';
 
 const DB_PATH = path.join(process.cwd(), 'data', 'reels-db.json');
 
@@ -20,6 +21,11 @@ function saveDB(arr) {
 
 export async function POST(req) {
   try {
+    const user = await getSessionUserFromRequest(req);
+    if (!user) {
+      return new Response(JSON.stringify({ success: false, error: 'Sign in to upload reels.' }), { status: 401 });
+    }
+
     const body = await req.json();
     const { filename, contentBase64, title, description, creatorName } = body;
     if (!filename || !contentBase64) {
@@ -39,7 +45,14 @@ export async function POST(req) {
       id: `reel_${Date.now()}`,
       videoUrl: `/api/reels/files/${safeName}`,
       thumbnailUrl: '',
-      creator: { id: `user_${Date.now()}`, name: creatorName || 'You', handle: 'you', avatarUrl: '', isVerified: false, isFollowing: false },
+      creator: {
+        id: String(user.id),
+        name: user.fullName || creatorName || 'Kairo Life',
+        handle: user.email === 'findyourkairo@gmail.com' ? 'kairolife' : 'you',
+        avatarUrl: '',
+        isVerified: Boolean(user.isAdmin),
+        isFollowing: false,
+      },
       caption: title || '',
       location: '',
       linkedTripId: null,

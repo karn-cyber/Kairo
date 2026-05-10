@@ -1,9 +1,16 @@
 'use client';
 import React, { useState } from 'react';
 import { X, UserMinus } from 'lucide-react';
-import { mockFollowers } from '@/data/mockPosts';
 
-export default function FollowersModal({ isOpen, onClose, title = 'Followers', followers = mockFollowers, isOwnProfile = false }) {
+const defaultFollowers = [
+  { id: 'f1', handle: 'rohankapoor', displayName: 'Rohan Kapoor', avatarUrl: 'https://via.placeholder.com/36?text=RK' },
+  { id: 'f2', handle: 'priyatravels', displayName: 'Priya Sharma', avatarUrl: 'https://via.placeholder.com/36?text=PS' },
+  { id: 'f3', handle: 'trekwithaj', displayName: 'Arjun Verma', avatarUrl: 'https://via.placeholder.com/36?text=AV' },
+  { id: 'f4', handle: 'mountaingoer', displayName: 'Sarah Chen', avatarUrl: 'https://via.placeholder.com/36?text=SC' },
+  { id: 'f5', handle: 'wanderlust_soul', displayName: 'Maya Desai', avatarUrl: 'https://via.placeholder.com/36?text=MD' },
+];
+
+export default function FollowersModal({ isOpen, onClose, title = 'Followers', followers = defaultFollowers, isOwnProfile = false }) {
   const [search, setSearch] = useState('');
   const filtered = followers.filter((f) => f.displayName.toLowerCase().includes(search.toLowerCase()) || f.handle.toLowerCase().includes(search.toLowerCase()));
 

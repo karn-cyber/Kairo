@@ -3,6 +3,8 @@ import { getDb } from '@/lib/mongodb';
 import { SESSION_COOKIE_NAME, toSafeUser } from '@/lib/session';
 import { verifyPassword } from '@/lib/auth';
 
+const ADMIN_EMAIL = 'findyourkairo@gmail.com';
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -26,6 +28,21 @@ export async function POST(request) {
 
     if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
       return NextResponse.json({ ok: false, message: 'Invalid email or password.' }, { status: 401 });
+    }
+
+    if (user.email === ADMIN_EMAIL && !user.isAdmin) {
+      await users.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            isAdmin: true,
+            handle: 'kairolife',
+            displayName: 'Kairo Life',
+            profileType: 'creator',
+            updatedAt: new Date(),
+          },
+        }
+      );
     }
 
     const now = new Date();

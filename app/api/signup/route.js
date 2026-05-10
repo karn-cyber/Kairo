@@ -3,6 +3,8 @@ import { getDb } from '@/lib/mongodb';
 import { SESSION_COOKIE_NAME, getDisplayNameFromEmail, toSafeUser } from '@/lib/session';
 import { hashPassword } from '@/lib/auth';
 
+const ADMIN_EMAIL = 'findyourkairo@gmail.com';
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -33,6 +35,10 @@ export async function POST(request) {
               fullName: resolvedFullName,
               role,
               passwordHash: hashPassword(password),
+              isAdmin: email === ADMIN_EMAIL,
+              handle: email === ADMIN_EMAIL ? 'kairolife' : existingUser.handle,
+              displayName: email === ADMIN_EMAIL ? 'Kairo Life' : existingUser.displayName,
+              profileType: email === ADMIN_EMAIL ? 'creator' : existingUser.profileType,
               updatedAt: now,
               lastSeenAt: now,
               source: 'signup',
@@ -68,6 +74,10 @@ export async function POST(request) {
       email,
       role,
       passwordHash: hashPassword(password),
+      isAdmin: email === ADMIN_EMAIL,
+      handle: email === ADMIN_EMAIL ? 'kairolife' : undefined,
+      displayName: email === ADMIN_EMAIL ? 'Kairo Life' : resolvedFullName,
+      profileType: email === ADMIN_EMAIL ? 'creator' : 'user',
       createdAt: now,
       updatedAt: now,
       lastSeenAt: now,

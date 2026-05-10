@@ -1,15 +1,34 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Heart, MessageCircle, Send, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
+import useSession from '@/hooks/useSession';
 
 export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiking, setIsLiking] = useState(false);
+  const user = useSession();
+
+  useEffect(() => {
+    if (posts && posts[currentIndex]) {
+      const post = posts[currentIndex];
+      setIsLiked(post.isLiked || false);
+      setLikeCount(post.likes || 0);
+    }
+  }, [currentIndex, posts]);
 
   if (!isOpen || !posts || posts.length === 0) return null;
 
   const post = posts[currentIndex];
   const totalPosts = posts.length;
+  const imageSrc = post.image || post.imageUrl || post.videoUrl;
+  const creatorName = post.creator?.name || post.creatorName || 'Kairo Life';
+  const creatorHandle = post.creator?.handle || post.creatorHandle || 'kairolife';
+  const creatorAvatar = post.creator?.avatar || post.creatorAvatar || 'https://via.placeholder.com/36?text=K';
+  const comments = post.comments || post.commentsData || [];
+  const commentsCount = post.stats?.comments ?? post.comments?.length ?? post.commentsData?.length ?? 0;
+  const sharesCount = post.stats?.shares ?? 0;
 
   const handleNext = () => {
     if (currentIndex < posts.length - 1) {
@@ -20,6 +39,33 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
   const handlePrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!user || !post.id) return;
+
+    setIsLiking(true);
+    try {
+      const action = isLiked ? 'unlike' : 'like';
+      const response = await fetch(`/api/reels/${post.id}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          userId: user._id || user.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsLiked(data.reel.isLiked);
+        setLikeCount(data.reel.likes);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -72,14 +118,14 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
 
         {/* Left: Image/Video */}
         <div style={{ flex: '1 1 60%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', position: 'relative' }}>
-          {post.type === 'video' || post.type === 'reel' ? (
+          {post.postType === 'video' || post.postType === 'reel' || post.videoUrl ? (
             <video
-              src={post.image}
+              src={post.videoUrl || imageSrc}
               style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
               controls
             />
           ) : (
-            <img src={post.image} alt="Post" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+            <img src={imageSrc} alt={post.caption || post.title || 'Post'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
           )}
 
           {/* Carousel Nav */}
@@ -138,34 +184,34 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
         <div style={{ flex: '1 1 40%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
           {/* Header */}
           <div style={{ padding: 16, borderBottom: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <img src={post.creator.avatar} alt={post.creator.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+            <img src={creatorAvatar} alt={creatorName} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{post.creator.name}</div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>@{post.creator.handle}</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{creatorName}</div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>@{creatorHandle}</div>
             </div>
-            <button style={{ border: 'none', background: '#1D9E75', color: '#fff', padding: '6px 16px', borderRadius: 20, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+            <button style={{ border: 'none', background: 'var(--orange)', color: '#fff', padding: '6px 16px', borderRadius: 20, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
               Follow
             </button>
           </div>
 
           {/* Caption */}
           <div style={{ padding: 16, borderBottom: '1px solid var(--line)' }}>
-            <div style={{ fontSize: 14 }}>{post.caption}</div>
+            <div style={{ fontSize: 14 }}>{post.caption || post.title}</div>
             <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>2 days ago</div>
           </div>
 
           {/* Comments */}
           <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-            {post.comments && post.comments.length > 0 ? (
-              post.comments.map((comment, idx) => (
+            {comments.length > 0 ? (
+              comments.map((comment, idx) => (
                 <div key={idx} style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
-                  <img src={comment.avatar} alt={comment.author} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  <img src={comment.avatar || comment.avatarUrl || 'https://via.placeholder.com/28?text=U'} alt={comment.author || comment.authorName} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13 }}>
-                      <span style={{ fontWeight: 600 }}>{comment.author}</span> {comment.text}
+                      <span style={{ fontWeight: 600 }}>{comment.author || comment.authorName}</span> {comment.text}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
-                      {comment.timestamp}
+                      {comment.timestamp || 'now'}
                     </div>
                   </div>
                 </div>
@@ -177,15 +223,16 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
 
           {/* Stats */}
           <div style={{ padding: 16, borderTop: '1px solid var(--line)', display: 'flex', justifyContent: 'space-around', fontSize: 13, color: 'var(--muted)' }}>
-            <div>❤️ {post.stats.likes}</div>
-            <div>💬 {post.stats.comments}</div>
-            <div>↗️ {post.stats.shares}</div>
+            <div>❤️ {likeCount}</div>
+            <div>💬 {commentsCount}</div>
+            <div>↗️ {sharesCount}</div>
           </div>
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 12, padding: 16, borderTop: '1px solid var(--line)' }}>
             <button
-              onClick={() => setIsLiked(!isLiked)}
+              onClick={handleLike}
+              disabled={isLiking || !user}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -196,10 +243,11 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
                 background: '#f0f0f0',
                 borderRadius: 8,
                 padding: 10,
-                cursor: 'pointer',
+                cursor: isLiking || !user ? 'not-allowed' : 'pointer',
+                opacity: isLiking || !user ? 0.6 : 1,
               }}
             >
-              <Heart size={18} fill={isLiked ? '#d81b60' : 'none'} color={isLiked ? '#d81b60' : '#111'} strokeWidth={1.5} />
+              <Heart size={18} fill={isLiked ? 'var(--orange)' : 'none'} color={isLiked ? 'var(--orange)' : 'var(--ink)'} strokeWidth={1.5} />
               Like
             </button>
             <button
@@ -216,7 +264,7 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
                 cursor: 'pointer',
               }}
             >
-              <MessageCircle size={18} color="#111" strokeWidth={1.5} />
+              <MessageCircle size={18} color="var(--ink)" strokeWidth={1.5} />
               Comment
             </button>
             <button
@@ -233,7 +281,7 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
                 cursor: 'pointer',
               }}
             >
-              <Bookmark size={18} color="#111" strokeWidth={1.5} />
+              <Bookmark size={18} color="var(--ink)" strokeWidth={1.5} />
               Save
             </button>
           </div>
@@ -246,7 +294,7 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
               style={{ flex: 1, border: '1px solid var(--line)', borderRadius: 8, padding: '8px 12px', fontSize: 14 }}
             />
             <button style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}>
-              <Send size={18} color="#1D9E75" strokeWidth={1.5} />
+              <Send size={18} color="var(--orange)" strokeWidth={1.5} />
             </button>
           </div>
         </div>
@@ -254,3 +302,4 @@ export default function PostModal({ isOpen, onClose, posts, initialIndex = 0 }) 
     </div>
   );
 }
+

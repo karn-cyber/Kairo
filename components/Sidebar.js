@@ -3,13 +3,19 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useState } from 'react';
 import kairoLogo from '@/logo/kairologo.png';
 import useSession from '@/hooks/useSession';
+import UploadReelModal from '@/components/UploadReelModal';
+import CreatePostModal from '@/components/CreatePostModal';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const session = useSession();
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [showReelModal, setShowReelModal] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
 
   const navItems = [
     {
@@ -69,12 +75,57 @@ export default function Sidebar() {
     return null;
   }
 
+  const closeCreateMenu = () => setShowCreateMenu(false);
+
   return (
     <div className="app-sidebar">
       <div className="app-sidebar-logo-container">
         <Link href="/" className="app-sidebar-logo-link">
           <Image src={kairoLogo} alt="Kairo" className="app-sidebar-logo-img" priority />
         </Link>
+      </div>
+      <div style={{ width: '100%', marginBottom: 12, position: 'relative' }}>
+        <button
+          onClick={() => setShowCreateMenu((prev) => !prev)}
+          className="app-sidebar-link"
+          style={{
+            width: '100%',
+            border: '1px solid var(--line)',
+            background: showCreateMenu ? 'rgba(200,90,26,0.08)' : '#fff',
+            fontWeight: 700,
+            justifyContent: 'center',
+            gap: 10,
+            cursor: 'pointer',
+          }}
+        >
+          <div className="app-sidebar-icon" style={{ strokeWidth: 2 }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+          </div>
+          <span className="app-sidebar-text">Create</span>
+        </button>
+
+        {showCreateMenu && (
+          <div style={{ position: 'absolute', left: '100%', top: 0, marginLeft: 12, background: '#fff', border: '1px solid var(--line)', borderRadius: 16, boxShadow: '0 14px 30px rgba(0,0,0,0.12)', padding: 8, width: 180, zIndex: 30 }}>
+            <button
+              onClick={() => {
+                closeCreateMenu();
+                setShowReelModal(true);
+              }}
+              style={{ width: '100%', border: 'none', background: 'transparent', padding: '12px 14px', borderRadius: 12, textAlign: 'left', cursor: 'pointer', fontWeight: 600, color: 'var(--ink)' }}
+            >
+              Create Reel
+            </button>
+            <button
+              onClick={() => {
+                closeCreateMenu();
+                setShowPostModal(true);
+              }}
+              style={{ width: '100%', border: 'none', background: 'transparent', padding: '12px 14px', borderRadius: 12, textAlign: 'left', cursor: 'pointer', fontWeight: 600, color: 'var(--ink)' }}
+            >
+              Create Post
+            </button>
+          </div>
+        )}
       </div>
       <>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, width: '100%', justifyContent: 'center' }}>
@@ -111,6 +162,24 @@ export default function Sidebar() {
             </Link>
           </div>
         </>
+
+      <UploadReelModal
+        isOpen={showReelModal}
+        onClose={() => setShowReelModal(false)}
+        onPublish={() => {
+          setShowReelModal(false);
+          router.push('/reels');
+        }}
+      />
+
+      <CreatePostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onPublished={() => {
+          setShowPostModal(false);
+          router.push('/community');
+        }}
+      />
     </div>
   );
 }

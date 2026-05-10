@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { mockProfile, mockOwnProfile } from '@/data/mockProfile';
+import { mockProfile } from '@/data/mockProfile';
 
 export function useProfile(handle) {
   const [profile, setProfile] = useState(null);
@@ -12,10 +12,7 @@ export function useProfile(handle) {
 
     const timer = setTimeout(() => {
       try {
-        if (handle === 'me' || handle === 'yourhandle') {
-          setProfile(mockOwnProfile);
-          setError(null);
-        } else if (handle === 'kairolife') {
+        if (handle === 'me' || handle === 'kairolife') {
           setProfile(mockProfile);
           setError(null);
         } else {

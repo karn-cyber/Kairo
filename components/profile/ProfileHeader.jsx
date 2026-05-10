@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, Settings, MoreVertical, MessageCircle, UserPlus, UserMinus } from 'lucide-react';
 import { useFollowToggle } from '@/hooks/useFollowToggle';
 
-export default function ProfileHeader({ profile, isOwnProfile, isFollowing: propFollowing, onFollow, onEdit, onFollowersClick, onFollowingClick }) {
+export default function ProfileHeader({ profile, postCount, isOwnProfile, isFollowing: propFollowing, onFollow, onEdit, onFollowersClick, onFollowingClick }) {
   const followHook = useFollowToggle(profile?.isFollowing);
   const isFollowing = typeof propFollowing === 'boolean' ? propFollowing : followHook.isFollowing;
   const toggleFollow = onFollow || followHook.toggleFollow;
@@ -11,13 +11,13 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
   const statsItems = [
-    { label: 'posts', value: profile?.stats.posts },
+    { label: 'posts', value: typeof postCount === 'number' ? postCount : profile?.stats.posts },
     { label: 'followers', value: profile?.stats.followers, onClick: onFollowersClick },
     { label: 'following', value: profile?.stats.following, onClick: onFollowingClick },
   ];
 
   return (
-    <div style={{ maxWidth: 935, margin: '0 auto', padding: '32px 16px', borderBottom: '1px solid var(--line)', background: '#fff' }}>
+    <div style={{ maxWidth: 935, margin: '0 auto', padding: '32px 16px', borderBottom: '1px solid var(--line)', background: 'linear-gradient(180deg, rgba(255,253,248,0.96), rgba(255,253,248,0.9))' }}>
       {/* Avatar + Right side */}
       <div style={{ display: 'flex', gap: 48 }}>
         {/* Avatar */}
@@ -32,7 +32,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
-              outline: profile?.isVerified ? '2px solid #1D9E75' : 'none',
+              outline: profile?.isVerified ? '2px solid var(--orange)' : 'none',
               outlineOffset: '2px',
             }}
           >
@@ -48,7 +48,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
         <div style={{ flex: 1 }}>
           {/* Row 1: Handle + Action buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 400 }}>{profile?.handle}</h1>
+            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 600, color: 'var(--ink)' }}>{profile?.handle}</h1>
             {isOwnProfile ? (
               <>
                 <button onClick={onEdit} style={{ padding: '8px 24px', border: '1px solid var(--line)', borderRadius: 8, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>
@@ -59,7 +59,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
                 </button>
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => setShowSettingsMenu(!showSettingsMenu)} style={{ padding: '8px 12px', border: '1px solid var(--line)', borderRadius: 8, background: '#fff', cursor: 'pointer' }}>
-                    <Settings size={20} color="#111" strokeWidth={1.5} />
+                    <Settings size={20} color="var(--ink)" strokeWidth={1.5} />
                   </button>
                   {showSettingsMenu && (
                     <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 8, background: '#fff', border: '1px solid var(--line)', borderRadius: 8, overflow: 'hidden', zIndex: 10, minWidth: 220 }}>
@@ -92,7 +92,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
                     padding: '8px 24px',
                     border: isFollowing ? '1px solid var(--line)' : 'none',
                     borderRadius: 8,
-                    background: isFollowing ? '#fff' : '#1D9E75',
+                    background: isFollowing ? '#fff' : 'var(--orange)',
                     color: isFollowing ? '#111' : '#fff',
                     cursor: 'pointer',
                     fontWeight: 600,
@@ -129,7 +129,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
           <div style={{ display: 'flex', gap: 40, marginBottom: 20 }}>
             {statsItems.map((stat) => (
               <div key={stat.label} onClick={stat.onClick} style={{ cursor: stat.onClick ? 'pointer' : 'default' }}>
-                <div style={{ fontWeight: 700, fontSize: 16 }}>{stat.value.toLocaleString()}</div>
+                <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--ink)' }}>{stat.value.toLocaleString()}</div>
                 <div style={{ fontSize: 14, color: 'var(--muted)', textTransform: 'capitalize' }}>{stat.label}</div>
               </div>
             ))}
@@ -137,11 +137,11 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
 
           {/* Row 3: Display name + verified */}
           <div style={{ marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 700 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>
               {profile?.displayName}
               {profile?.isVerified && (
                 <div title="Verified Creator on Kairo">
-                  <CheckCircle2 size={18} color="#1D9E75" fill="#1D9E75" strokeWidth={2} />
+                  <CheckCircle2 size={18} color="var(--orange)" fill="var(--orange)" strokeWidth={2} />
                 </div>
               )}
             </div>
@@ -149,7 +149,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
 
           {/* Row 4: Bio */}
           {profile?.bio && (
-            <div style={{ marginBottom: 12, fontSize: 14, color: '#111', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+            <div style={{ marginBottom: 12, fontSize: 14, color: 'var(--ink)', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
               {profile.bio}
             </div>
           )}
@@ -163,7 +163,7 @@ export default function ProfileHeader({ profile, isOwnProfile, isFollowing: prop
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: 'inline-block', marginRight: 16, color: '#1D9E75', fontSize: 14, textDecoration: 'none' }}
+                  style={{ display: 'inline-block', marginRight: 16, color: 'var(--orange)', fontSize: 14, textDecoration: 'none' }}
                 >
                   🔗 {link.label}
                 </a>
