@@ -1,12 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import kairoLogo from '@/logo/kairologo.png';
+import useSession from '@/hooks/useSession';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const session = useSession();
 
   const navItems = [
     {
@@ -60,6 +63,12 @@ export default function Sidebar() {
     }
   ];
 
+  // session === undefined -> loading, null -> not signed in, object -> signed in
+  // Only hide sidebar when we know for sure user is not signed in
+  if (session === null) {
+    return null;
+  }
+
   return (
     <div className="app-sidebar">
       <div className="app-sidebar-logo-container">
@@ -67,40 +76,41 @@ export default function Sidebar() {
           <Image src={kairoLogo} alt="Kairo" className="app-sidebar-logo-img" priority />
         </Link>
       </div>
+      <>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, width: '100%', justifyContent: 'center' }}>
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || (item.href === '/community' && pathname?.startsWith('/community')) || (item.href === '/chat' && pathname?.startsWith('/chat'));
+            return (
+              <Link 
+                key={item.name} 
+                href={item.href}
+                className="app-sidebar-link"
+                style={{
+                    background: isActive ? 'rgba(0,0,0,0.04)' : 'transparent',
+                    fontWeight: isActive ? 700 : 500,
+                  }}
+                >
+                  <div className="app-sidebar-icon" style={{ strokeWidth: isActive ? 3 : 2 }}>
+                    {item.icon}
+                  </div>
+                  <span className="app-sidebar-text">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, width: '100%', justifyContent: 'center' }}>
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href === '/community' && pathname?.startsWith('/community')) || (item.href === '/chat' && pathname?.startsWith('/chat'));
-          return (
+          <div style={{ marginTop: 'auto', width: '100%' }}>
             <Link 
-              key={item.name} 
-              href={item.href}
+              href="/more"
               className="app-sidebar-link"
-              style={{
-                background: isActive ? 'rgba(0,0,0,0.04)' : 'transparent',
-                fontWeight: isActive ? 700 : 500,
-              }}
             >
-              <div className="app-sidebar-icon" style={{ strokeWidth: isActive ? 3 : 2 }}>
-                {item.icon}
+              <div className="app-sidebar-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
               </div>
-              <span className="app-sidebar-text">{item.name}</span>
+              <span className="app-sidebar-text">More</span>
             </Link>
-          );
-        })}
-      </nav>
-
-      <div style={{ marginTop: 'auto', width: '100%' }}>
-        <Link 
-          href="/more"
-          className="app-sidebar-link"
-        >
-          <div className="app-sidebar-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
           </div>
-          <span className="app-sidebar-text">More</span>
-        </Link>
-      </div>
+        </>
     </div>
   );
 }

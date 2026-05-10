@@ -20,6 +20,7 @@ export async function GET(request) {
 
     return NextResponse.json({ ok: true, user: toSafeUser(user) });
   } catch (error) {
+    console.error('API /me error:', error);
     return NextResponse.json(
       { ok: false, message: error instanceof Error ? error.message : 'Unable to load session.' },
       { status: 500 }
