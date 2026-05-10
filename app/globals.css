@@ -140,3 +140,108 @@ a,a:visited,a:hover,a:active{text-decoration:none;}
   .section { padding: 60px 20px; }
   .container { padding: 0 20px; }
 }
+
+/* SIDEBAR STYLES (Contractable, Theme matched) */
+.app-sidebar {
+  width: 72px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-right: 1px solid var(--line);
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  z-index: 1000;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+.app-sidebar:hover {
+  width: 244px;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.06);
+}
+
+.app-sidebar-logo-container {
+  padding: 12px 0 24px;
+  display: flex;
+  align-items: center;
+  height: 80px;
+}
+.app-sidebar-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-decoration: none;
+  overflow: hidden;
+  width: 100%;
+}
+.app-sidebar-logo-img {
+  height: 28px;
+  width: auto;
+  max-width: 120px;
+  transition: all 0.3s;
+}
+.app-sidebar:not(:hover) .app-sidebar-logo-img {
+  max-width: 44px;
+  object-fit: cover;
+  object-position: left;
+}
+
+.app-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.app-sidebar-link:hover {
+  background: rgba(0,0,0,0.04);
+}
+.app-sidebar-icon {
+  flex-shrink: 0;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-sidebar-text {
+  font-size: 16px;
+  font-family: var(--DS);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.app-sidebar:hover .app-sidebar-text {
+  opacity: 1;
+  transition-delay: 0.1s;
+  pointer-events: auto;
+}
+
+.app-main-content {
+  flex: 1;
+  margin-left: 72px; /* Fixed margin to avoid layout shift when sidebar expands */
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    width: 60px;
+    padding: 8px;
+  }
+  .app-sidebar:hover {
+    width: 60px; /* Disable expand on mobile */
+  }
+  .app-sidebar-icon {
+    width: 44px;
+  }
+  .app-main-content {
+    margin-left: 60px;
+  }
+}

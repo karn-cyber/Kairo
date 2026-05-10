@@ -43,6 +43,18 @@ const POST_SEED = [
     body: 'Bus, stay, food, permits and emergency buffer. Posting a full line-item estimate.',
     imageDataUrl: '/travelPhotos/15db363c3fb05bd75d7a3da746271a4e.jpg',
   },
+  {
+    channelSlug: 'feed',
+    title: 'Are down jackets absolutely necessary for October treks?',
+    body: 'I am doing a trek in mid-October and trying to pack light. Can I manage with layering fleeces and a windbreaker, or is a proper down jacket non-negotiable? Would love to hear your experiences.',
+    imageDataUrl: null,
+  },
+  {
+    channelSlug: 'solo-women-travel',
+    title: 'Any verified homestays in Dharamkot?',
+    body: 'Looking for safe, reliable homestays in Dharamkot for a 2-week workation. Good Wi-Fi and a supportive host are my main priorities. Please share contacts if you have any.',
+    imageDataUrl: null,
+  },
 ];
 
 export function slugify(input) {
@@ -265,13 +277,29 @@ function sanitizeImageData(imageDataUrl) {
   return value;
 }
 
-export async function createPost({ user, channelSlug, title, body, imageDataUrl }) {
+export async function createPost({ user, channelSlug, title, body, imageDataUrl, attachedPackage }) {
   const db = await getDb();
   const cleanTitle = String(title || '').trim();
   const cleanBody = String(body || '').trim();
 
+  let finalPackage = null;
+  if (attachedPackage) {
+    if (user.role !== 'agency') {
+      throw new Error('Only agencies can attach packages to posts.');
+    }
+    finalPackage = {
+      title: String(attachedPackage.title || '').trim(),
+      price: String(attachedPackage.price || '').trim(),
+      days: String(attachedPackage.days || '').trim(),
+      location: String(attachedPackage.location || '').trim(),
+    };
+    if (!finalPackage.title || !finalPackage.price) {
+      throw new Error('Package title and price are required.');
+    }
+  }
+
   if (!channelSlug) {
-    throw new Error('Please choose a channel.');
+    channelSlug = 'feed';
   }
 
   if (!cleanTitle) {
@@ -282,10 +310,12 @@ export async function createPost({ user, channelSlug, title, body, imageDataUrl 
     throw new Error('Post body is required.');
   }
 
-  const channel = await db.collection('community_channels').findOne({ slug: channelSlug });
-
-  if (!channel) {
-    throw new Error('Selected channel does not exist.');
+  let channel = null;
+  if (channelSlug !== 'feed') {
+    channel = await db.collection('community_channels').findOne({ slug: channelSlug });
+    if (!channel) {
+      throw new Error('Selected channel does not exist.');
+    }
   }
 
   const post = {
@@ -299,6 +329,7 @@ export async function createPost({ user, channelSlug, title, body, imageDataUrl 
     upvotes: 0,
     commentsCount: 0,
     createdAt: new Date(),
+    attachedPackage: finalPackage,
   };
 
   const insertResult = await db.collection('community_posts').insertOne(post);
@@ -333,6 +364,7 @@ export async function listPosts({ channel = '', query = '' } = {}) {
     title: post.title,
     body: post.body,
     imageDataUrl: post.imageDataUrl || null,
+    attachedPackage: post.attachedPackage || null,
     authorName: post.authorName,
     authorRole: post.authorRole || 'traveller',
     upvotes: post.upvotes || 0,

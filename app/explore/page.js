@@ -1,6 +1,6 @@
 'use client';
 
-import Nav from '@/components/Nav';
+import Sidebar from '@/components/Sidebar';
 import Footer from '@/components/Footer';
 import { Badge, Card } from '@/components/UI';
 import Link from 'next/link';
@@ -25,9 +25,8 @@ const treks = [
 export default function Explore() {
   return (
     <>
-      <Nav variant="light" />
-      <AuthGate title="Explore is members only" description="Sign in to browse verified treks, trips, and agencies.">
-        <section className="section warm" style={{paddingTop: '60px'}}>
+        <AuthGate title="Explore is members only" description="Sign in to browse verified treks, trips, and agencies.">
+          <div style={{ paddingTop: '60px', paddingBottom: '60px', flex: 1 }}>
           <div className="container">
           <div style={{display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: '24px', alignItems: 'stretch', marginBottom: '36px'}}>
             <div style={{paddingTop: '6px'}}>
@@ -144,7 +143,7 @@ export default function Explore() {
             ))}
           </div>
           </div>
-        </section>
+        </div>
       </AuthGate>
 
       <Footer />

@@ -36,6 +36,7 @@ export async function POST(request) {
       title: body.title,
       body: body.body,
       imageDataUrl: body.imageDataUrl,
+      attachedPackage: body.attachedPackage,
     });
 
     return NextResponse.json({ ok: true, post }, { status: 201 });
